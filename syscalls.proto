@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package syscalls;
+
+service NetworkFile {
+  rpc Open (OpenRequest) returns (OpenResponse) {}
+  rpc Pwrite (WriteRequest) returns (WriteResponse) {}
+  rpc Pread (ReadRequest) returns (ReadResponse) {}
+  rpc Flock (FlockRequest) returns (ErrnoResponse) {}
+  rpc Fcntl (FcntlRequest) returns (ErrnoResponse) {}
+  rpc Lseek (LseekRequest) returns (LseekResponse) {}
+  rpc Fsync (FsyncRequest) returns (ErrnoResponse) {}
+}
+
+message ErrnoResponse {
+  int32 err = 1;
+}
+
+message OpenRequest {
+  string path = 1;
+  int32 oflag = 2;
+  int32 mode = 3;
+}
+
+message OpenResponse {
+  int32 fd = 1;
+  int32 err = 2;
+}
+
+message WriteRequest {
+  int32 fd = 1;
+  bytes buf = 2;
+  // ignored in write used in pwrite
+  int64 offset = 3;
+}
+
+message WriteResponse {
+  int64 numwritten = 1;
+  int32 err = 2;
+}
+
+message ReadRequest {
+  int32 fd = 1;
+  uint64 nbyte = 2;
+  int64 offset = 3;
+}
+
+message ReadResponse {
+  bytes buf = 1;
+  int32 err = 2;
+}
+
+message FlockRequest {
+  int32 fd = 1;
+  int32 operation = 2;
+}
+
+message FcntlFlock {
+  int32 l_type = 1;
+  int32 l_whence = 2;
+  int64 l_start = 3;
+  int64 l_len = 4;
+  // TOOD: obviously this wont work when doing seperate machines
+  uint64 l_pid = 5;
+}
+
+message FcntlRequest {
+  int32 fd = 1;
+  int32 cmd = 2;
+  oneof operation {
+    FcntlFlock lk = 3;
+    int32 descriptor_flags = 4;
+  }
+}
+
+message LseekRequest {
+  int32 fd = 1;
+  int64 offset = 2;
+  int32 whence = 3;
+}
+
+message LseekResponse {
+  int64 offset = 1;
+  int32 err = 2;
+}
+
+message FsyncRequest {
+  int32 fd = 1;
+}
